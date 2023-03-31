@@ -5,9 +5,12 @@ from .serializer import *
 from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated,IsAdminUser
+from rest_framework.decorators import permission_classes
 
 # Create your views here.
 class ViewAllBooks(APIView):
+    permission_classes = [IsAdminUser]
     def get(self, request):
         books = Book.objects.all()
         serializers_data = BookSerializer(books, many=True)
@@ -20,18 +23,19 @@ class ViewAllBooks(APIView):
         return Response(serializers_data.errors, status= status.HTTP_400_BAD_REQUEST)
     
 class ViewBook(APIView):
-     def get(self, request, id):
+    permission_classes = [IsAdminUser]
+    def get(self, request, id):
          book = Book.objects.get(id = id)
          serializers_data = BookSerializer(book)
          return Response(serializers_data.data, status= status.HTTP_200_OK)   
-     def put(self, request, id):
+    def put(self, request, id):
          book = Book.objects.get(id = id)
          serializers_data = BookSerializer(book, data= request.data)
          if serializers_data.is_valid():
              serializers_data.save()
              return Response(serializers_data.data, status= status.HTTP_201_CREATED)
          return Response(serializers_data.errors, status= status.HTTP_400_BAD_REQUEST)
-     def delete(self, request, id):
+    def delete(self, request, id):
          book = Book.objects.get(id =id)
          book.delete()
          return Response({"status: Deleted"})
